@@ -4,6 +4,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
+import kotlin.math.log
 
 plugins {
     id("dev.kikugie.stonecutter")
@@ -70,6 +71,12 @@ tasks.register("mergeJars") {
 
     doLast {
         mergedDir.mkdirs()
+
+        // Move the bukkit jar into merged if it exists
+        val bukkitJar = File("${rootProject.projectDir}/loader/bukkit/build/libs").listFiles()
+            ?.single { it.isFile && !it.name.endsWith("-sources.jar") && it.name.endsWith(".jar") && !it.name.contains(Regex("^loader-bukkit.*")) }
+        bukkitJar?.copyTo(File("$mergedDir/${bukkitJar.name}"), overwrite = true)
+
         val jarsToMerge = File("$rootDir/versions").listFiles()
             ?.flatMap {
                 File("$it/build/libs").listFiles()

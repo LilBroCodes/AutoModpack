@@ -1,0 +1,13 @@
+name: AutoModpack
+version: '1.0-SNAPSHOT'
+main: org.lilbrocodes.automodpack.AutoModpack
+api-version: '1.20'
+authors: [ Skidamek, LilBroCodes ]
+website: https://github.com/LilBroCodes/AutoModpack/tree/bukkit
+commands:
+  automodpack:
+    description: Main command for AutoModpack.
+    usage: /automodpack <info>
+    aliases: [ "amp" ]
+    permission: automodpack.amp
+    permission-message: You do not have permission to execute this command.

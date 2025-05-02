@@ -1,0 +1,51 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Clean" type="GradleRunConfiguration" factoryName="Gradle">
+    <ExternalSystemSettings>
+      <option name="executionName" />
+      <option name="externalProjectPath" value="$PROJECT_DIR$" />
+      <option name="externalSystemIdString" value="GRADLE" />
+      <option name="scriptParameters" value="" />
+      <option name="taskDescriptions">
+        <list />
+      </option>
+      <option name="taskNames">
+        <list>
+          <option value="loader-bukkit:clean" />
+          <option value="loader-core:clean" />
+          <option value="loader-fabric-15:clean" />
+          <option value="loader-fabric-16:clean" />
+          <option value="loader-fabric-core:clean" />
+          <option value="loader-forge-fml40:clean" />
+          <option value="loader-forge-fml47:clean" />
+          <option value="loader-neoforge-fml2:clean" />
+          <option value="loader-neoforge-fml4:clean" />
+          <option value="1.18.2-fabric:clean" />
+          <option value="1.18.2-forge:clean" />
+          <option value="1.19.2-fabric:clean" />
+          <option value="1.19.2-forge:clean" />
+          <option value="1.19.4-fabric:clean" />
+          <option value="1.19.4-forge:clean" />
+          <option value="1.20.1-fabric:clean" />
+          <option value="1.20.1-forge:clean" />
+          <option value="1.20.4-fabric:clean" />
+          <option value="1.20.4-neoforge:clean" />
+          <option value="1.20.6-fabric:clean" />
+          <option value="1.20.6-neoforge:clean" />
+          <option value="1.21.1-fabric:clean" />
+          <option value="1.21.1-neoforge:clean" />
+          <option value="1.21.3-fabric:clean" />
+          <option value="1.21.3-neoforge:clean" />
+          <option value="1.21.4-fabric:clean" />
+          <option value="1.21.4-neoforge:clean" />
+          <option value=":clean" />
+        </list>
+      </option>
+      <option name="vmOptions" />
+    </ExternalSystemSettings>
+    <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+    <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+    <DebugAllEnabled>false</DebugAllEnabled>
+    <RunAsTest>false</RunAsTest>
+    <method v="2" />
+  </configuration>
+</component>
