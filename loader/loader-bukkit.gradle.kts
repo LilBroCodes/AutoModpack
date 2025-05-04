@@ -29,6 +29,7 @@ dependencies {
     compileOnly("org.spigotmc:spigot-api:1.20.1-R0.1-SNAPSHOT")
 
     implementation("org.lilbrocodes:commander:1.131")
+    implementation("org.lilbrocodes:commander:1.131")
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.apache.logging.log4j:log4j-core:2.20.0")
     implementation("org.jetbrains:annotations:24.0.0")
