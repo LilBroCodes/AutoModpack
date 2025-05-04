@@ -75,6 +75,7 @@ tasks.register("mergeJars") {
         // Move the bukkit jar into merged if it exists
         val bukkitJar = File("${rootProject.projectDir}/loader/bukkit/build/libs").listFiles()
             ?.single { it.isFile && !it.name.endsWith("-sources.jar") && it.name.endsWith(".jar") && !it.name.contains(Regex("^loader-bukkit.*")) }
+
         bukkitJar?.copyTo(File("$mergedDir/${bukkitJar.name}"), overwrite = true)
 
         val jarsToMerge = File("$rootDir/versions").listFiles()
