@@ -1,63 +1,167 @@
 package org.lilbrocodes.automodpack.command;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.lilbrocodes.automodpack.config.ConfigUtils;
-import org.lilbrocodes.automodpack.modpack.ModpackHandler;
-import org.lilbrocodes.automodpack.modpack.LoadedModpack;
-import org.lilbrocodes.automodpack.utils.PathUtil;
-import org.lilbrocodes.automodpack.utils.TreeIO;
+import org.apache.logging.log4j.Logger;
+import org.lilbrocodes.commander.api.CommanderCommand;
+import org.lilbrocodes.commander.api.executor.ExecutorNode;
+import org.lilbrocodes.commander.api.executor.ParameterExecutorNode;
+import org.lilbrocodes.commander.api.executor.ParentExecutorNode;
+import org.lilbrocodes.commander.api.executor.PseudoExecutorNode;
+import pl.skidam.automodpack_core.config.ConfigTools;
+import pl.skidam.automodpack_core.config.Jsons;
 
+import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
-import static org.lilbrocodes.automodpack.AutoModpack.isDebug;
+import static pl.skidam.automodpack_core.GlobalVariables.*;
 
-public class AutoModpackCommand implements CommandExecutor, TabCompleter {
+public class AutoModpackCommand extends CommanderCommand {
+    private final Logger logger;
+
+    public AutoModpackCommand(Logger logger) {
+        super(new PseudoExecutorNode("automodpack", "Root command", "§aAutoModpack", (sender, args) -> {
+            sender.sendMessage(affix("AutoModpack is loaded i guess"));
+            sender.sendMessage(affix("Idk what to put here /shrug"));
+            // TODO: Fix this
+        }), true);
+        this.logger = logger;
+    }
+
     @Override
-    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
-        if (args.length > 0 && args[0].equalsIgnoreCase("info")) {
-            commandSender.sendMessage(affixMessage(String.format("%d modpacks are loaded:", ModpackHandler.getLoadedModpacks().size())));
+    public void initialize(ExecutorNode<ParentExecutorNode> rootNode) {
+        if (!(rootNode instanceof ParentExecutorNode root)) return;
 
-            for (Map.Entry<String, LoadedModpack> entry : ModpackHandler.getLoadedModpacks().entrySet()) {
-                String loader = entry.getKey();
-                LoadedModpack modpack = entry.getValue();
+        ParameterExecutorNode generate = new ParameterExecutorNode(
+                "generate",
+                "Generate modpack.",
+                "§aAutoModpack",
+                List.of(),
+                (sender, args) -> {
+                    sender.sendMessage(affix("Starting generation..."));
+//                    if (Server.modpack != null) Server.modpack.generateNew();
+                    sender.sendMessage(affix("Modpack generated."));
+                }
+        );
 
-                commandSender.sendMessage(affixMessage(String.format("§6%s§r (Folder: %s)",
-                        loader, modpack.modpack.getFolder())));
+        PseudoExecutorNode host = new PseudoExecutorNode(
+                "host",
+                "Status of modpack hosting.",
+                "§AutoModpack",
+                (sender, args) -> {
+                    sender.sendMessage(affix(String.format("Host server %s running.", hostServer.isRunning() ? "is" : "is not")));
+                }
+        );
 
-                if (!modpack.wildCards.wildcardMatches.isEmpty()) {
-                    if (isDebug()) {
-                        List<String> files = PathUtil.cleanPaths(modpack.wildCards.wildcardMatches.keySet().stream().toList(), modpack.modpack.getPath().toString());
-                        String tree = TreeIO.printTree(files, !ConfigUtils.config.useNonAscii(), PathUtil.deepestFolder(modpack.modpack.getPath().toString()));
-                        commandSender.sendMessage(affixMessage(String.format("§rSynced files:§r\n%s", tree)));
+        ParentExecutorNode config = new ParentExecutorNode(
+                "config",
+                "Configuration options.",
+                "§AutoModpack"
+        );
+
+        ParameterExecutorNode hostStart = new ParameterExecutorNode(
+                "start",
+                "Start modpack hosting.",
+                "§aAutoModpack",
+                List.of(),
+                (sender, args) -> {
+                    if (hostServer.isRunning()) {
+                        sender.sendMessage(affix("Modpack host is already running."));
                     } else {
-                        commandSender.sendMessage(affixMessage(String.format("§rThere are §a%d§r Synced files§r", modpack.wildCards.wildcardMatches.size())));
+                        sender.sendMessage(affix("§7(1)§r Starting modpack host..."));
+                        hostServer.start();
+                        sender.sendMessage(affix("§7(2)§r Modpack host started."));
                     }
                 }
-            }
-        } else if (args.length > 0 && args[0].equalsIgnoreCase("reload")) {
-            ConfigUtils.reload();
-            commandSender.sendMessage(affixMessage("Reloaded config!"));
-        } else if (args.length > 0 && args[0].equalsIgnoreCase("generate")) {
-            ModpackHandler.generateModpacks();
-            commandSender.sendMessage(affixMessage("Generating modpack..."));
-        } else {
-            commandSender.sendMessage(affixMessage("§cInvalid subcommand!§r"));
+        );
+
+        ParameterExecutorNode hostStop = new ParameterExecutorNode(
+                "stop",
+                "Stop modpack hosting.",
+                "§aAutoModpack",
+                List.of(),
+                (sender, args) -> {
+                    if (!hostServer.isRunning()) {
+                        sender.sendMessage(affix("Modpack host is already stopped."));
+                    } else {
+                        sender.sendMessage(affix("§7(1)§r Stopping modpack host..."));
+                        hostServer.stop();
+                        sender.sendMessage(affix("§7(2)§r Modpack host stopped."));
+                    }
+                }
+        );
+
+        ParameterExecutorNode hostRestart = new ParameterExecutorNode(
+                "restart",
+                "Restart modpack hosting.",
+                "§aAutoModpack",
+                List.of(),
+                (sender, args) -> {
+                    if (hostServer.isRunning()) {
+                        sender.sendMessage(affix("§7(0)§r Stopping modpack host..."));
+                        hostServer.stop();
+                    }
+                    sender.sendMessage(affix("§7(1)§r Starting modpack host..."));
+                    hostServer.start();
+                    sender.sendMessage(affix("§7(2)§r Modpack host restarted."));
+                }
+        );
+
+        ParameterExecutorNode hostConnections = new ParameterExecutorNode(
+                "connections",
+                "Lists all currently active modpack host connections.",
+                "§aAutoModpack",
+                List.of(),
+                (sender, args) -> sender.sendMessage(affix(String.format("%d active connections. (%s)", hostServer.getConnections().size(), join(Arrays.asList(hostServer.getConnections().keySet().toArray())))))
+        );
+
+        ParameterExecutorNode configReload = new ParameterExecutorNode(
+                "reload",
+                "Reload config files.",
+                "§aAutoModpack",
+                List.of(),
+                (sender, args) -> {
+                    sender.sendMessage(affix("Reloading config files..."));
+                    serverConfig = ConfigTools.load(serverConfigFile, Jsons.ServerConfigFields.class);
+                    Jsons.ServerCoreConfigFields serverCoreConfig = ConfigTools.load(serverCoreConfigFile, Jsons.ServerCoreConfigFields.class);
+                    if (serverCoreConfig != null) {
+                        AM_VERSION = serverCoreConfig.automodpackVersion;
+                        LOADER = serverCoreConfig.loader;
+                        LOADER_VERSION = serverCoreConfig.loaderVersion;
+                        MC_VERSION = serverCoreConfig.mcVersion;
+                        ConfigTools.save(serverCoreConfigFile, serverCoreConfig);
+                    }
+                    sender.sendMessage(affix("Reloaded config files."));
+                }
+        );
+
+        host.addChild(hostStart);
+        host.addChild(hostStop);
+        host.addChild(hostRestart);
+        host.addChild(hostConnections);
+
+        config.addChild(configReload);
+
+        root.addChild(generate);
+        root.addChild(host);
+        root.addChild(config);
+        logger.info("Registered {} subcommand(s).", root.getChildren().size());
+    }
+
+    private static String affix(String message) {
+        return String.format("§r§7[§aAutoModpack§7]§r %s", message);
+    }
+
+    private static String join(List<Object> list) {
+        StringBuilder out = new StringBuilder();
+        for (Object item : list) {
+            out.append(Objects.equals(getLast(list), item) ? item.toString() : String.format("%s%s", item.toString(), ", "));
         }
-        return true;
+        return out.toString();
     }
 
-    @Override
-    public @Nullable List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
-        return args.length == 1 ? List.of("info", "reload", "generate") : List.of();
-    }
-
-    private String affixMessage(String message) {
-        return String.format("[§aAutoModpack§r] %s", message);
+    @Nullable private static <T> T getLast(List<T> list) {
+        if (list.isEmpty()) return null;
+        else return list.get(list.size() - 1);
     }
 }
